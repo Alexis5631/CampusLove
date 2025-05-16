@@ -7,6 +7,8 @@ namespace CampusLove2.Domain.Entities
 {
     public class UserMatch
     {
-        
+        public int Id { get; set; }
+        public int IdUser1 { get; set; } // Relación con Usuarios
+        public int IdUser2 { get; set; } // Relación con Usuarios
     }
 }
