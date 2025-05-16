@@ -7,6 +7,7 @@ namespace CampusLove2.Domain.Entities
 {
     public class Estado
     {
-        
+        public int IdEstado { get; set; }
+        public string? Descripcion { get; set; }
     }
 }

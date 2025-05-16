@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS estado (
 
 CREATE TABLE IF NOT EXISTS pais (
     id_pais INT AUTO_INCREMENT,
-    nombre VARCHAR(50).
+    nombre VARCHAR(50),
     PRIMARY KEY (id_pais)
 );
 
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS region (
 CREATE TABLE IF NOT EXISTS ciudad (
     id_ciudad INT AUTO_INCREMENT,
     Nombre VARCHAR(50),
-    PRIMARY KEY (id_ciudad)
+    PRIMARY KEY (id_ciudad),
     id_region INT,
     FOREIGN KEY (id_region) REFERENCES region(id_region)
 );
