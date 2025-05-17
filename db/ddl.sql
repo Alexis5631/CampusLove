@@ -96,10 +96,11 @@ CREATE TABLE IF NOT EXISTS reacciones (
 );
 
 CREATE TABLE IF NOT EXISTS user_match (
-    id INT AUTO_INCREMENT,
+    id_user_match INT AUTO_INCREMENT,
     id_user1 INT,
     id_user2 INT,
     fecha_match TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_user_match),
     FOREIGN KEY (id_user1) REFERENCES usuarios(id_usuarios),
     FOREIGN KEY (id_user2) REFERENCES usuarios(id_usuarios)
 );
