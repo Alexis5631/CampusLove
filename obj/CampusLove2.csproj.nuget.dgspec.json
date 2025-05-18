@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Alexis\\projectsNet\\CampusLove2\\CampusLove2.csproj": {}
+    "C:\\Users\\Alexis\\Documents\\TrabajosCampus\\CampusLove2\\CampusLove\\CampusLove2.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Alexis\\projectsNet\\CampusLove2\\CampusLove2.csproj": {
+    "C:\\Users\\Alexis\\Documents\\TrabajosCampus\\CampusLove2\\CampusLove\\CampusLove2.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Alexis\\projectsNet\\CampusLove2\\CampusLove2.csproj",
+        "projectUniqueName": "C:\\Users\\Alexis\\Documents\\TrabajosCampus\\CampusLove2\\CampusLove\\CampusLove2.csproj",
         "projectName": "CampusLove2",
-        "projectPath": "C:\\Users\\Alexis\\projectsNet\\CampusLove2\\CampusLove2.csproj",
+        "projectPath": "C:\\Users\\Alexis\\Documents\\TrabajosCampus\\CampusLove2\\CampusLove\\CampusLove2.csproj",
         "packagesPath": "C:\\Users\\Alexis\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Alexis\\projectsNet\\CampusLove2\\obj\\",
+        "outputPath": "C:\\Users\\Alexis\\Documents\\TrabajosCampus\\CampusLove2\\CampusLove\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Alexis\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -43,6 +43,12 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "MySql.Data": {
+              "target": "Package",
+              "version": "[9.3.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
