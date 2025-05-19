@@ -36,7 +36,8 @@ namespace CampusLove.Infrastructure.Repositories
                 {
                     Id = Convert.ToInt32(reader["id_user_match"]),
                     IdUser1 = Convert.ToInt32(reader["id_user1"]),
-                    IdUser2 = Convert.ToInt32(reader["id_user2"])
+                    IdUser2 = Convert.ToInt32(reader["id_user2"]),
+                    FechaMatch = Convert.ToDateTime(reader["fecha_match"])
                 });
             }
 
@@ -64,7 +65,8 @@ namespace CampusLove.Infrastructure.Repositories
                 {
                     Id = Convert.ToInt32(reader["id_user_match"]),
                     IdUser1 = Convert.ToInt32(reader["id_user1"]),
-                    IdUser2 = Convert.ToInt32(reader["id_user2"])
+                    IdUser2 = Convert.ToInt32(reader["id_user2"]),
+                    FechaMatch = Convert.ToDateTime(reader["fecha_match"])
                 };
             }
 
@@ -77,8 +79,8 @@ namespace CampusLove.Infrastructure.Repositories
                 throw new ArgumentNullException(nameof(userMatch));
 
             const string query = @"
-                INSERT INTO user_match (id_user1, id_user2) 
-                VALUES (@IdUser1, @IdUser2)";
+                INSERT INTO user_match (id_user1, id_user2, fecha_match) 
+                VALUES (@IdUser1, @IdUser2, @FechaMatch)";
             
             using var transaction = await _connection.BeginTransactionAsync();
 
@@ -87,6 +89,7 @@ namespace CampusLove.Infrastructure.Repositories
                 using var command = new MySqlCommand(query, _connection, transaction);
                 command.Parameters.AddWithValue("@IdUser1", userMatch.IdUser1);
                 command.Parameters.AddWithValue("@IdUser2", userMatch.IdUser2);
+                command.Parameters.AddWithValue("@FechaMatch", DateTime.Now);
 
                 var result = await command.ExecuteNonQueryAsync() > 0;
                 await transaction.CommitAsync();
@@ -107,7 +110,8 @@ namespace CampusLove.Infrastructure.Repositories
             const string query = @"
                 UPDATE user_match 
                 SET id_user1 = @IdUser1, 
-                    id_user2 = @IdUser2
+                    id_user2 = @IdUser2,
+                    fecha_match = @FechaMatch
                 WHERE id_user_match = @Id";
             
             using var transaction = await _connection.BeginTransactionAsync();
@@ -117,6 +121,7 @@ namespace CampusLove.Infrastructure.Repositories
                 using var command = new MySqlCommand(query, _connection, transaction);
                 command.Parameters.AddWithValue("@IdUser1", userMatch.IdUser1);
                 command.Parameters.AddWithValue("@IdUser2", userMatch.IdUser2);
+                command.Parameters.AddWithValue("@FechaMatch", userMatch.FechaMatch);
                 command.Parameters.AddWithValue("@Id", userMatch.Id);
 
                 var result = await command.ExecuteNonQueryAsync() > 0;
@@ -173,7 +178,8 @@ namespace CampusLove.Infrastructure.Repositories
                 {
                     Id = Convert.ToInt32(reader["id_user_match"]),
                     IdUser1 = Convert.ToInt32(reader["id_user1"]),
-                    IdUser2 = Convert.ToInt32(reader["id_user2"])
+                    IdUser2 = Convert.ToInt32(reader["id_user2"]),
+                    FechaMatch = Convert.ToDateTime(reader["fecha_match"])
                 });
             }
 

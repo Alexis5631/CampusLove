@@ -4,10 +4,10 @@ namespace CampusLove2
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             MenuPrincipal menu = new MenuPrincipal();
-            menu.MostrarMenu();
+            await menu.MostrarMenu();
         }
     }
 }

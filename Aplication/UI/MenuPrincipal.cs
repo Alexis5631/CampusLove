@@ -12,76 +12,57 @@ namespace CampusLove2.Aplication.UI
     {
         private readonly MySqlConnection _connection;
         private readonly MenuSignUp _menuSignUp;
+        private readonly MenuLogin _menuLogin;
+        private Usuarios? _usuarioActual;
 
         public MenuPrincipal()
         {
             _connection = DatabaseConfig.GetConnection();
             _menuSignUp = new MenuSignUp();
+            _menuLogin = new MenuLogin();
         }
 
-        public void MostrarMenu()
+        public async Task MostrarMenu()
         {
             bool salir = false;
             while (!salir)
             {
                 Console.Clear();
-                Console.WriteLine("=== MENÚ PRINCIPAL ===");
-                Console.WriteLine("1. Registrarse");
-                Console.WriteLine("2. Iniciar Sesión");
-                Console.WriteLine("3. Salir");
-                Console.Write("\nSeleccione una opción: ");
-
-                string opcion = Console.ReadLine();
-
-                switch (opcion)
+                if (_usuarioActual == null)
                 {
-                    case "1":
-                        _menuSignUp.MostrarMenuRegistro();
-                        break;
-                    case "2":
-                        IniciarSesion();
-                        break;
-                    case "3":
-                        salir = true;
-                        Console.WriteLine("\n¡Gracias por usar el sistema!");
-                        break;
-                    default:
-                        Console.WriteLine("\nOpción no válida. Presione cualquier tecla para continuar...");
-                        Console.ReadKey();
-                        break;
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.WriteLine("=== MENÚ PRINCIPAL ===");
+                    Console.WriteLine("1. Registrarse");
+                    Console.WriteLine("2. Iniciar Sesión");
+                    Console.WriteLine("3. Salir");
+                    Console.Write("\nSeleccione una opción: ");
+
+                    string opcion = Console.ReadLine();
+
+                    switch (opcion)
+                    {
+                        case "1":
+                            _menuSignUp.MostrarMenuRegistro();
+                            break;
+                        case "2":
+                            _usuarioActual = await _menuLogin.ValidateUser();
+                            if (_usuarioActual != null)
+                            {
+                                await _menuLogin.ShowMenu(_usuarioActual);
+                                _usuarioActual = null; // Resetear usuario al cerrar sesión
+                            }
+                            break;
+                        case "3":
+                            salir = true;
+                            Console.WriteLine("\n¡Gracias por usar el sistema!");
+                            break;
+                        default:
+                            Console.WriteLine("\nOpción no válida. Presione cualquier tecla para continuar...");
+                            Console.ReadKey();
+                            break;
+                    }
                 }
             }
-        }
-
-        private void IniciarSesion()
-        {
-            Console.Clear();
-            Console.WriteLine("=== INICIO DE SESIÓN ===");
-            
-            Console.Write("Ingrese su nickname: ");
-            string nickname = Console.ReadLine();
-
-            Console.Write("Ingrese su contraseña: ");
-            string password = Console.ReadLine();
-
-            string query = "SELECT COUNT(*) FROM Usuarios WHERE Username = @username AND Password = @password";
-            using (var cmd = new MySqlCommand(query, _connection))
-            {
-                cmd.Parameters.AddWithValue("@username", nickname);
-                cmd.Parameters.AddWithValue("@password", password);
-
-                int count = Convert.ToInt32(cmd.ExecuteScalar());
-                if (count > 0)
-                {
-                    Console.WriteLine("\n¡Inicio de sesión exitoso! Presione cualquier tecla para continuar...");
-                }
-                else
-                {
-                    Console.WriteLine("\nUsuario no encontrado o contraseña incorrecta. Por favor, regístrese primero.");
-                    Console.WriteLine("Presione cualquier tecla para continuar...");
-                }
-            }
-            Console.ReadKey();
         }
     }
 }

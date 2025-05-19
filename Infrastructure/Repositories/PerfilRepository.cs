@@ -25,14 +25,15 @@ namespace CampusLove.Infrastructure.Repositories
                        pr.descripcion as profesion_descripcion, 
                        c.Nombre as ciudad_nombre, 
                        r.Nombre as region_nombre, 
-                       pa.nombre as pais_nombre 
+                       pa.nombre as pais_nombre,
+                       COALESCE((SELECT COUNT(*) FROM reacciones r WHERE r.id_perfil = p.id_perfil AND r.tipo = 'like'), 0) as total_likes
                 FROM perfil p 
-                INNER JOIN genero g ON p.id_genero = g.id_genero 
-                INNER JOIN estado e ON p.id_estado = e.id_estado 
-                INNER JOIN profesion pr ON p.id_profesion = pr.id_profesion 
-                INNER JOIN ciudad c ON p.id_ciudad = c.id_ciudad 
-                INNER JOIN region r ON c.id_region = r.id_region 
-                INNER JOIN pais pa ON r.id_pais = pa.id_pais";
+                LEFT JOIN genero g ON p.id_genero = g.id_genero 
+                LEFT JOIN estado e ON p.id_estado = e.id_estado 
+                LEFT JOIN profesion pr ON p.id_profesion = pr.id_profesion 
+                LEFT JOIN ciudad c ON p.id_ciudad = c.id_ciudad 
+                LEFT JOIN region r ON c.id_region = r.id_region 
+                LEFT JOIN pais pa ON r.id_pais = pa.id_pais";
 
             using var command = new MySqlCommand(query, _connection);
             using var reader = await command.ExecuteReaderAsync();
@@ -46,11 +47,11 @@ namespace CampusLove.Infrastructure.Repositories
                     Apellido = reader["apellido"].ToString() ?? string.Empty,
                     Identificacion = reader["identificacion"].ToString() ?? string.Empty,
                     Biografia = reader["biografia"].ToString() ?? string.Empty,
-                    TotalLikes = Convert.ToInt32(reader["total_likes"]),
-                    IdGenero = Convert.ToInt32(reader["id_genero"]),
-                    IdEstado = Convert.ToInt32(reader["id_estado"]),
-                    IdProfesion = Convert.ToInt32(reader["id_profesion"]),
-                    IdCiudad = Convert.ToInt32(reader["id_ciudad"])
+                    TotalLikes = reader["total_likes"] == DBNull.Value ? 0 : Convert.ToInt32(reader["total_likes"]),
+                    IdGenero = reader["id_genero"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_genero"]),
+                    IdEstado = reader["id_estado"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_estado"]),
+                    IdProfesion = reader["id_profesion"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_profesion"]),
+                    IdCiudad = reader["id_ciudad"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_ciudad"])
                 });
             }
 
@@ -65,14 +66,15 @@ namespace CampusLove.Infrastructure.Repositories
                        pr.descripcion as profesion_descripcion, 
                        c.Nombre as ciudad_nombre, 
                        r.Nombre as region_nombre, 
-                       pa.nombre as pais_nombre 
+                       pa.nombre as pais_nombre,
+                       COALESCE((SELECT COUNT(*) FROM reacciones r WHERE r.id_perfil = p.id_perfil AND r.tipo = 'like'), 0) as total_likes
                 FROM perfil p 
-                INNER JOIN genero g ON p.id_genero = g.id_genero 
-                INNER JOIN estado e ON p.id_estado = e.id_estado 
-                INNER JOIN profesion pr ON p.id_profesion = pr.id_profesion 
-                INNER JOIN ciudad c ON p.id_ciudad = c.id_ciudad 
-                INNER JOIN region r ON c.id_region = r.id_region 
-                INNER JOIN pais pa ON r.id_pais = pa.id_pais 
+                LEFT JOIN genero g ON p.id_genero = g.id_genero 
+                LEFT JOIN estado e ON p.id_estado = e.id_estado 
+                LEFT JOIN profesion pr ON p.id_profesion = pr.id_profesion 
+                LEFT JOIN ciudad c ON p.id_ciudad = c.id_ciudad 
+                LEFT JOIN region r ON c.id_region = r.id_region 
+                LEFT JOIN pais pa ON r.id_pais = pa.id_pais 
                 WHERE p.id_perfil = @Id";
 
             using var command = new MySqlCommand(query, _connection);
@@ -83,16 +85,16 @@ namespace CampusLove.Infrastructure.Repositories
             {
                 return new Perfil
                 {
-                    IdPerfil = Convert.ToInt32(reader["id_perfil"]),
+                    IdPerfil = reader["id_perfil"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_perfil"]),
                     Nombre = reader["nombre"].ToString() ?? string.Empty,
                     Apellido = reader["apellido"].ToString() ?? string.Empty,
                     Identificacion = reader["identificacion"].ToString() ?? string.Empty,
                     Biografia = reader["biografia"].ToString() ?? string.Empty,
-                    TotalLikes = Convert.ToInt32(reader["total_likes"]),
-                    IdGenero = Convert.ToInt32(reader["id_genero"]),
-                    IdEstado = Convert.ToInt32(reader["id_estado"]),
-                    IdProfesion = Convert.ToInt32(reader["id_profesion"]),
-                    IdCiudad = Convert.ToInt32(reader["id_ciudad"])
+                    TotalLikes = reader["total_likes"] == DBNull.Value ? 0 : Convert.ToInt32(reader["total_likes"]),
+                    IdGenero = reader["id_genero"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_genero"]),
+                    IdEstado = reader["id_estado"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_estado"]),
+                    IdProfesion = reader["id_profesion"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_profesion"]),
+                    IdCiudad = reader["id_ciudad"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_ciudad"])
                 };
             }
 
