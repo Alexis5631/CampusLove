@@ -95,12 +95,23 @@ namespace CampusLove.Infrastructure.Repositories
                 // Actualizar total_likes en perfil si es un like
                 if (reaccion.Tipo == "Like")
                 {
+                    // Primero verificamos el valor actual de total_likes para evitar problemas con NULL
+                    const string checkLikesQuery = @"
+                        SELECT COALESCE(total_likes, 0) FROM perfil 
+                        WHERE id_perfil = @IdPerfil";
+                    
+                    using var checkCommand = new MySqlCommand(checkLikesQuery, _connection, transaction);
+                    checkCommand.Parameters.AddWithValue("@IdPerfil", reaccion.IdPerfil);
+                    var currentLikes = Convert.ToInt32(await checkCommand.ExecuteScalarAsync());
+                    
+                    // Ahora actualizamos con el valor correcto
                     const string updateLikesQuery = @"
                         UPDATE perfil 
-                        SET total_likes = total_likes + 1 
+                        SET total_likes = @NewTotalLikes 
                         WHERE id_perfil = @IdPerfil";
 
                     using var updateCommand = new MySqlCommand(updateLikesQuery, _connection, transaction);
+                    updateCommand.Parameters.AddWithValue("@NewTotalLikes", currentLikes + 1);
                     updateCommand.Parameters.AddWithValue("@IdPerfil", reaccion.IdPerfil);
                     await updateCommand.ExecuteNonQueryAsync();
                 }

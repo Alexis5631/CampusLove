@@ -183,6 +183,7 @@ namespace CampusLove2.Aplication.UI
                 Console.WriteLine($"\nID: {perfil.IdPerfil}");
                 Console.WriteLine($"Nombre: {perfil.Nombre} {perfil.Apellido}");
                 Console.WriteLine($"Biografía: {perfil.Biografia}");
+                Console.WriteLine($"Total Likes: {perfil.TotalLikes}");
                 Console.WriteLine("----------------------");
             }
 
@@ -210,6 +211,17 @@ namespace CampusLove2.Aplication.UI
 
             await _reaccionesRepository.InsertAsync(reaccion);
             ShowMessage("Reacción registrada exitosamente.", ConsoleColor.Green);
+            
+            // Recargar el perfil para mostrar los likes actualizados
+            if (reaccion.Tipo == "Like")
+            {
+                var perfilActualizado = await _perfilRepository.GetByIdAsync(perfilSeleccionado.IdPerfil);
+                if (perfilActualizado != null)
+                {
+                    Console.WriteLine($"\nPerfil actualizado: {perfilActualizado.Nombre} {perfilActualizado.Apellido}");
+                    Console.WriteLine($"Total Likes: {perfilActualizado.TotalLikes}");
+                }
+            }
 
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write("\nPresione cualquier tecla para continuar...");
