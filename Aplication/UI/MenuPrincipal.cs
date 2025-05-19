@@ -42,7 +42,7 @@ namespace CampusLove2.Aplication.UI
                     switch (opcion)
                     {
                         case "1":
-                            _menuSignUp.MostrarMenuRegistro();
+                            await _menuSignUp.MostrarMenuRegistro();
                             break;
                         case "2":
                             _usuarioActual = await _menuLogin.ValidateUser();

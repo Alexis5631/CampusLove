@@ -16,6 +16,7 @@ namespace CampusLove2.Aplication.UI
         private readonly PerfilRepository _perfilRepository;
         private readonly ReaccionesRepository _reaccionesRepository;
         private readonly UserMatchRepository _userMatchRepository;
+        private readonly InteresesRepository _interesesRepository;
         private readonly MenuSignUp _menuSignUp;
 
         public MenuLogin()
@@ -24,6 +25,7 @@ namespace CampusLove2.Aplication.UI
             _perfilRepository = new PerfilRepository();
             _reaccionesRepository = new ReaccionesRepository();
             _userMatchRepository = new UserMatchRepository();
+            _interesesRepository = new InteresesRepository();
             _menuSignUp = new MenuSignUp();
         }
 
@@ -118,7 +120,8 @@ namespace CampusLove2.Aplication.UI
                             await ViewMatches(currentUser);
                             break;
                         case "4":
-                            // TODO: Implementar menú de configuración
+                            var menuOpciones = new MenuOpciones();
+                            await menuOpciones.ShowConfigMenu(currentUser);
                             break;    
                         case "5":
                             returnToMain = true;
@@ -149,9 +152,14 @@ namespace CampusLove2.Aplication.UI
             {
                 if (perfil.IdPerfil != currentUser.IdPerfil)
                 {
+                    // Obtener los intereses del usuario
+                    var intereses = await _interesesRepository.GetInteresesByUsuarioAsync(perfil.IdPerfil);
+                    var interesesTexto = intereses.Any() ? string.Join(", ", intereses.Select(i => i.Descripcion)) : "No especificados";
+
                     Console.WriteLine($"\nID: {perfil.IdPerfil}");
                     Console.WriteLine($"Nombre: {perfil.Nombre} {perfil.Apellido}");
                     Console.WriteLine($"Biografía: {perfil.Biografia}");
+                    Console.WriteLine($"Intereses: {interesesTexto}");
                     Console.WriteLine($"Total Likes: {perfil.TotalLikes}");
                     Console.WriteLine("----------------------");
                 }
@@ -180,9 +188,14 @@ namespace CampusLove2.Aplication.UI
 
             foreach (var perfil in perfilesDisponibles)
             {
+                // Obtener los intereses del usuario
+                var intereses = await _interesesRepository.GetInteresesByUsuarioAsync(perfil.IdPerfil);
+                var interesesTexto = intereses.Any() ? string.Join(", ", intereses.Select(i => i.Descripcion)) : "No especificados";
+
                 Console.WriteLine($"\nID: {perfil.IdPerfil}");
                 Console.WriteLine($"Nombre: {perfil.Nombre} {perfil.Apellido}");
                 Console.WriteLine($"Biografía: {perfil.Biografia}");
+                Console.WriteLine($"Intereses: {interesesTexto}");
                 Console.WriteLine($"Total Likes: {perfil.TotalLikes}");
                 Console.WriteLine("----------------------");
             }
@@ -218,8 +231,43 @@ namespace CampusLove2.Aplication.UI
                 var perfilActualizado = await _perfilRepository.GetByIdAsync(perfilSeleccionado.IdPerfil);
                 if (perfilActualizado != null)
                 {
+                    // Obtener los intereses del usuario actualizado
+                    var intereses = await _interesesRepository.GetInteresesByUsuarioAsync(perfilActualizado.IdPerfil);
+                    var interesesTexto = intereses.Any() ? string.Join(", ", intereses.Select(i => i.Descripcion)) : "No especificados";
+
                     Console.WriteLine($"\nPerfil actualizado: {perfilActualizado.Nombre} {perfilActualizado.Apellido}");
+                    Console.WriteLine($"Biografía: {perfilActualizado.Biografia}");
+                    Console.WriteLine($"Intereses: {interesesTexto}");
                     Console.WriteLine($"Total Likes: {perfilActualizado.TotalLikes}");
+                    
+                    // Verificar si hay un match (el otro usuario también dio like)
+                    var perfilUsuario = await _perfilRepository.GetByIdAsync(currentUser.IdPerfil);
+                    
+                    if (perfilUsuario != null)
+                    {
+                        // Obtener el ID de usuario del perfil al que se le dio like
+                        var otroUsuario = await _usuarioRepository.GetByPerfilIdAsync(perfilSeleccionado.IdPerfil);
+                        
+                        if (otroUsuario != null)
+                        {
+                            // Verificar si el otro usuario ya le dio like al usuario actual
+                            bool existeMatch = await _reaccionesRepository.ExisteMatchAsync(currentUser.IdUsuarios, otroUsuario.IdUsuarios);
+                            
+                            if (existeMatch)
+                            {
+                                // Crear un nuevo match
+                                var match = new UserMatch
+                                {
+                                    IdUser1 = currentUser.IdUsuarios,
+                                    IdUser2 = otroUsuario.IdUsuarios,
+                                    FechaMatch = DateTime.Now
+                                };
+                                
+                                await _userMatchRepository.InsertAsync(match);
+                                ShowMessage("¡Has hecho match con este perfil! Revisa tus matches.", ConsoleColor.Magenta);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -249,7 +297,13 @@ namespace CampusLove2.Aplication.UI
                 
                 if (perfil != null)
                 {
+                    // Obtener los intereses del usuario con el que hizo match
+                    var intereses = await _interesesRepository.GetInteresesByUsuarioAsync(perfil.IdPerfil);
+                    var interesesTexto = intereses.Any() ? string.Join(", ", intereses.Select(i => i.Descripcion)) : "No especificados";
+
                     Console.WriteLine($"\nMatch con: {perfil.Nombre} {perfil.Apellido}");
+                    Console.WriteLine($"Biografía: {perfil.Biografia}");
+                    Console.WriteLine($"Intereses: {interesesTexto}");
                     Console.WriteLine($"Fecha del match: {match.FechaMatch}");
                     Console.WriteLine("----------------------");
                 }

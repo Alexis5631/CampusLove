@@ -1,19 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using CampusLove.Infrastructure.Repositories;
+using CampusLove.Domain.Entities;
 
 namespace CampusLove2.Aplication.UI
 {
     public class MenuSignUp
     {
         private readonly UsuarioRepository _usuarioRepository;
+        private readonly InteresesRepository _interesesRepository;
 
         public MenuSignUp()
         {
             _usuarioRepository = new UsuarioRepository();
+            _interesesRepository = new InteresesRepository();
         }
 
-        public void MostrarMenuRegistro()
+        public async Task MostrarMenuRegistro()
         {
             Console.Clear();
             Console.WriteLine("=== REGISTRO DE USUARIO ===");
@@ -79,6 +84,18 @@ namespace CampusLove2.Aplication.UI
                     idGenero, idEstado, idProfesion, idCiudad);
 
                 _usuarioRepository.RegistrarUsuario(nickname, password, idPerfil);
+                
+                // Selección de intereses
+                Console.WriteLine("\n=== SELECCIÓN DE INTERESES ===");
+                Console.WriteLine("Seleccione sus intereses (puede elegir varios):");
+                List<int> interesesSeleccionados = SeleccionarIntereses();
+                
+                // Registrar intereses del usuario
+                foreach (var idInteres in interesesSeleccionados)
+                {
+                    await _interesesRepository.AddInteresUsuarioAsync(idPerfil, idInteres);
+                }
+                
                 Console.WriteLine("\n¡Registro exitoso! Presione cualquier tecla para continuar...");
             }
             catch (Exception ex)
@@ -142,6 +159,109 @@ namespace CampusLove2.Aplication.UI
                 }
             }
             return seleccion;
+        }
+        
+        private List<int> SeleccionarIntereses()
+        {
+            List<int> interesesSeleccionados = new List<int>();
+            bool seguirSeleccionando = true;
+            
+            // Obtener todos los intereses disponibles
+            var intereses = _interesesRepository.GetAllAsync().Result.ToList();
+            
+            // Mostrar todos los intereses disponibles
+            Console.WriteLine("\nIntereses disponibles:");
+            foreach (var interes in intereses)
+            {
+                Console.WriteLine($"{interes.IdIntereses}. {interes.Descripcion}");
+            }
+            
+            Console.WriteLine("0. Agregar nuevo interés");
+            Console.WriteLine("-1. Terminar selección");
+            
+            while (seguirSeleccionando)
+            {
+                int idInteres = ReadInt("\nSeleccione un interés (0 para agregar nuevo, -1 para terminar): ");
+                
+                if (idInteres == -1)
+                {
+                    seguirSeleccionando = false;
+                }
+                else if (idInteres == 0)
+                {
+                    // Agregar nuevo interés
+                    string descripcionInteres = ReadText("Ingrese la descripción del nuevo interés: ");
+                    
+                    if (string.IsNullOrWhiteSpace(descripcionInteres))
+                    {
+                        ShowMessage("La descripción no puede estar vacía.", ConsoleColor.Red);
+                        continue;
+                    }
+                    
+                    // Crear y guardar el nuevo interés
+                    var nuevoInteres = new Intereses { Descripcion = descripcionInteres };
+                    bool resultado = _interesesRepository.InsertAsync(nuevoInteres).Result;
+                    
+                    if (resultado)
+                    {
+                        // Obtener el ID del interés recién creado
+                        var interesCreado = _interesesRepository.GetAllAsync().Result
+                            .FirstOrDefault(i => i.Descripcion == descripcionInteres);
+                        
+                        if (interesCreado != null)
+                        {
+                            interesesSeleccionados.Add(interesCreado.IdIntereses);
+                            ShowMessage($"Interés '{descripcionInteres}' agregado correctamente.", ConsoleColor.Green);
+                            
+                            // Actualizar la lista de intereses
+                            intereses = _interesesRepository.GetAllAsync().Result.ToList();
+                        }
+                    }
+                    else
+                    {
+                        ShowMessage("Error al agregar el nuevo interés.", ConsoleColor.Red);
+                    }
+                }
+                else if (intereses.Any(i => i.IdIntereses == idInteres))
+                {
+                    // Verificar si ya está seleccionado
+                    if (interesesSeleccionados.Contains(idInteres))
+                    {
+                        ShowMessage("Este interés ya ha sido seleccionado.", ConsoleColor.Yellow);
+                    }
+                    else
+                    {
+                        interesesSeleccionados.Add(idInteres);
+                        var interesSeleccionado = intereses.First(i => i.IdIntereses == idInteres);
+                        ShowMessage($"Interés '{interesSeleccionado.Descripcion}' seleccionado.", ConsoleColor.Green);
+                    }
+                }
+                else
+                {
+                    ShowMessage("Interés no válido.", ConsoleColor.Red);
+                }
+            }
+            
+            return interesesSeleccionados;
+        }
+        
+        private static string ReadText(string prompt)
+        {
+            Console.Write(prompt);
+            return Console.ReadLine() ?? string.Empty;
+        }
+        
+        private static int ReadInt(string prompt)
+        {
+            Console.Write(prompt);
+            return int.TryParse(Console.ReadLine(), out int result) ? result : 0;
+        }
+        
+        private static void ShowMessage(string message, ConsoleColor color)
+        {
+            Console.ForegroundColor = color;
+            Console.WriteLine(message);
+            Console.ResetColor();
         }
     }
 }

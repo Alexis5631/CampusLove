@@ -266,5 +266,65 @@ namespace CampusLove.Infrastructure.Repositories
 
             return reacciones;
         }
+
+        // Verifica si existe un match (likes mutuos) entre dos usuarios
+        public async Task<bool> ExisteMatchAsync(int idUsuario1, int idUsuario2)
+        {
+            // Verificar si el usuario1 le dio like al usuario2
+            const string query1 = @"
+                SELECT COUNT(*) FROM reacciones r
+                INNER JOIN usuarios u ON r.id_usuarios = u.id_usuarios
+                INNER JOIN perfil p ON r.id_perfil = p.id_perfil
+                WHERE r.id_usuarios = @IdUsuario1 
+                AND p.id_perfil = @IdUsuario2
+                AND r.tipo = 'Like'";
+
+            using var command1 = new MySqlCommand(query1, _connection);
+            command1.Parameters.AddWithValue("@IdUsuario1", idUsuario1);
+            command1.Parameters.AddWithValue("@IdUsuario2", idUsuario2);
+            var count1 = Convert.ToInt32(await command1.ExecuteScalarAsync());
+
+            if (count1 == 0) return false;
+
+            // Verificar si el usuario2 le dio like al usuario1
+            const string query2 = @"
+                SELECT COUNT(*) FROM reacciones r
+                INNER JOIN usuarios u ON r.id_usuarios = u.id_usuarios
+                INNER JOIN perfil p ON r.id_perfil = p.id_perfil
+                WHERE r.id_usuarios = @IdUsuario2 
+                AND p.id_perfil = @IdUsuario1
+                AND r.tipo = 'Like'";
+
+            using var command2 = new MySqlCommand(query2, _connection);
+            command2.Parameters.AddWithValue("@IdUsuario1", idUsuario1);
+            command2.Parameters.AddWithValue("@IdUsuario2", idUsuario2);
+            var count2 = Convert.ToInt32(await command2.ExecuteScalarAsync());
+
+            return count2 > 0;
+        }
+
+        // Obtiene los perfiles que han dado like al usuario y a los que el usuario ha dado like (matches potenciales)
+        public async Task<IEnumerable<int>> GetPotentialMatchesAsync(int idUsuario)
+        {
+            var potentialMatches = new List<int>();
+            
+            // Obtener los perfiles a los que el usuario ha dado like
+            const string query = @"
+                SELECT p.id_perfil 
+                FROM reacciones r 
+                INNER JOIN perfil p ON r.id_perfil = p.id_perfil 
+                WHERE r.id_usuarios = @IdUsuario AND r.tipo = 'Like'";
+
+            using var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                potentialMatches.Add(Convert.ToInt32(reader["id_perfil"]));
+            }
+
+            return potentialMatches;
+        }
     }
 }

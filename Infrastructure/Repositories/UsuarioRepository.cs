@@ -305,5 +305,32 @@ namespace CampusLove.Infrastructure.Repositories
 
             return null;
         }
+
+        public async Task<Usuarios?> GetByPerfilIdAsync(int perfilId)
+        {
+            const string query = @"
+                SELECT u.*, p.nombre, p.apellido, p.identificacion, p.biografia 
+                FROM usuarios u 
+                INNER JOIN perfil p ON u.id_perfil = p.id_perfil 
+                WHERE u.id_perfil = @PerfilId";
+
+            using var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@PerfilId", perfilId);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new Usuarios
+                {
+                    IdUsuarios = Convert.ToInt32(reader["id_usuarios"]),
+                    Username = reader["username"].ToString() ?? string.Empty,
+                    Password = reader["password"].ToString() ?? string.Empty,
+                    FechaNacimiento = Convert.ToDateTime(reader["fecha_nacimiento"]),
+                    IdPerfil = Convert.ToInt32(reader["id_perfil"])
+                };
+            }
+
+            return null;
+        }
     }
 }
