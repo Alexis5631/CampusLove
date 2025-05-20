@@ -13,6 +13,7 @@ namespace CampusLove2.Aplication.UI
         private readonly MySqlConnection _connection;
         private readonly MenuSignUp _menuSignUp;
         private readonly MenuLogin _menuLogin;
+        private readonly MenuEstadisticas _menuEstadisticas;
         private Usuarios? _usuarioActual;
 
         public MenuPrincipal()
@@ -20,8 +21,11 @@ namespace CampusLove2.Aplication.UI
             _connection = DatabaseConfig.GetConnection();
             _menuSignUp = new MenuSignUp();
             _menuLogin = new MenuLogin();
+            _menuEstadisticas = new MenuEstadisticas();
         }
 
+
+        
         public async Task MostrarMenu()
         {
             bool salir = false;
@@ -34,7 +38,8 @@ namespace CampusLove2.Aplication.UI
                     Console.WriteLine("=== MENÚ PRINCIPAL ===");
                     Console.WriteLine("1. Registrarse");
                     Console.WriteLine("2. Iniciar Sesión");
-                    Console.WriteLine("3. Salir");
+                    Console.WriteLine("3. Ver estadísticas del sistema");
+                    Console.WriteLine("4. Salir");
                     Console.Write("\nSeleccione una opción: ");
 
                     string opcion = Console.ReadLine();
@@ -53,6 +58,9 @@ namespace CampusLove2.Aplication.UI
                             }
                             break;
                         case "3":
+                            await _menuEstadisticas.MostrarEstadisticas();
+                            break;
+                        case "4":
                             salir = true;
                             Console.WriteLine("\n¡Gracias por usar el sistema!");
                             break;
