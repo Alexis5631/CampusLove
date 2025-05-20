@@ -35,6 +35,15 @@ namespace CampusLove2.Aplication.UI
             Console.Write("Ingrese su biografía: ");
             string biografia = Console.ReadLine();
 
+            // Solicitar la edad
+            Console.Write("Ingrese su edad: ");
+            int edad = 0;
+            while (!int.TryParse(Console.ReadLine(), out edad) || edad < 18 || edad > 100)
+            {
+                Console.WriteLine("Edad no válida. Debe ser un número entre 18 y 100.");
+                Console.Write("Ingrese su edad: ");
+            }
+
             // Selección de género
             Console.WriteLine("\nSeleccione su género:");
             Console.WriteLine("1. Masculino");
@@ -78,12 +87,21 @@ namespace CampusLove2.Aplication.UI
             Console.Write("Ingrese su contraseña: ");
             string password = Console.ReadLine();
 
+            // Solicitar fecha de nacimiento
+            Console.Write("Ingrese su fecha de nacimiento (formato DD/MM/AAAA): ");
+            DateTime fechaNacimiento;
+            while (!DateTime.TryParse(Console.ReadLine(), out fechaNacimiento) || fechaNacimiento > DateTime.Now || fechaNacimiento.Year < 1900)
+            {
+                Console.WriteLine("Fecha no válida. Debe ser una fecha en formato DD/MM/AAAA y no puede ser en el futuro.");
+                Console.Write("Ingrese su fecha de nacimiento (formato DD/MM/AAAA): ");
+            }
+
             try
             {
                 int idPerfil = _usuarioRepository.RegistrarPerfil(nombre, apellido, identificacion, biografia, 
-                    idGenero, idEstado, idProfesion, idCiudad);
+                    idGenero, idEstado, idProfesion, idCiudad, edad);
 
-                _usuarioRepository.RegistrarUsuario(nickname, password, idPerfil);
+                _usuarioRepository.RegistrarUsuario(nickname, password, idPerfil, fechaNacimiento);
                 
                 // Selección de intereses
                 Console.WriteLine("\n=== SELECCIÓN DE INTERESES ===");

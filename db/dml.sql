@@ -42,10 +42,10 @@ INSERT INTO ciudad (Nombre, id_region) VALUES
 ('CDMX', 3),
 ('La Plata', 4);
 
-INSERT INTO perfil (nombre, apellido, identificacion, biografia, id_ciudad, id_genero, id_estado, id_profesion) VALUES
-('Carlos', 'Ramírez', '100001', 'Apasionado por la tecnología y el café.', 1, 1, 1, 1),
-('Laura', 'Gómez', '100002', 'Amante del arte y los libros.', 2, 2, 1, 5),
-('Diego', 'Martínez', '100003', 'Fanático de los videojuegos y la música.', 3, 1, 1, 4);
+INSERT INTO perfil (nombre, apellido, identificacion, biografia, edad, id_ciudad, id_genero, id_estado, id_profesion) VALUES
+('Carlos', 'Ramírez', '100001', 'Apasionado por la tecnología y el café.', 28, 1, 1, 1, 1),
+('Laura', 'Gómez', '100002', 'Amante del arte y los libros.', 25, 2, 2, 1, 5),
+('Diego', 'Martínez', '100003', 'Fanático de los videojuegos y la música.', 23, 3, 1, 1, 4);
 
 INSERT INTO usuarios (username, password, fecha_nacimiento, id_perfil) VALUES
 ('carlosr', 'pass123', '1995-06-15', 1),

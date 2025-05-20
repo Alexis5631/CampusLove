@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS perfil (
     identificacion VARCHAR(50) UNIQUE,
     biografia TEXT,
     total_likes INT DEFAULT 0,
+    edad INT,
     id_ciudad INT,
     id_genero INT,
     id_estado INT,

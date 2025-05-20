@@ -48,6 +48,7 @@ namespace CampusLove.Infrastructure.Repositories
                     Identificacion = reader["identificacion"].ToString() ?? string.Empty,
                     Biografia = reader["biografia"].ToString() ?? string.Empty,
                     TotalLikes = reader["total_likes"] == DBNull.Value ? 0 : Convert.ToInt32(reader["total_likes"]),
+                    Edad = reader["edad"] == DBNull.Value ? 0 : Convert.ToInt32(reader["edad"]),
                     IdGenero = reader["id_genero"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_genero"]),
                     IdEstado = reader["id_estado"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_estado"]),
                     IdProfesion = reader["id_profesion"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_profesion"]),
@@ -91,6 +92,7 @@ namespace CampusLove.Infrastructure.Repositories
                     Identificacion = reader["identificacion"].ToString() ?? string.Empty,
                     Biografia = reader["biografia"].ToString() ?? string.Empty,
                     TotalLikes = reader["total_likes"] == DBNull.Value ? 0 : Convert.ToInt32(reader["total_likes"]),
+                    Edad = reader["edad"] == DBNull.Value ? 0 : Convert.ToInt32(reader["edad"]),
                     IdGenero = reader["id_genero"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_genero"]),
                     IdEstado = reader["id_estado"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_estado"]),
                     IdProfesion = reader["id_profesion"] == DBNull.Value ? 0 : Convert.ToInt32(reader["id_profesion"]),
@@ -107,9 +109,9 @@ namespace CampusLove.Infrastructure.Repositories
                 throw new ArgumentNullException(nameof(perfil));
 
             const string query = @"
-                INSERT INTO perfil (nombre, apellido, identificacion, biografia, total_likes, 
+                INSERT INTO perfil (nombre, apellido, identificacion, biografia, total_likes, edad,
                                   id_genero, id_estado, id_profesion, id_ciudad) 
-                VALUES (@Nombre, @Apellido, @Identificacion, @Biografia, @TotalLikes, 
+                VALUES (@Nombre, @Apellido, @Identificacion, @Biografia, @TotalLikes, @Edad,
                         @IdGenero, @IdEstado, @IdProfesion, @IdCiudad)";
             
             using var transaction = await _connection.BeginTransactionAsync();
@@ -122,6 +124,7 @@ namespace CampusLove.Infrastructure.Repositories
                 command.Parameters.AddWithValue("@Identificacion", perfil.Identificacion);
                 command.Parameters.AddWithValue("@Biografia", perfil.Biografia);
                 command.Parameters.AddWithValue("@TotalLikes", perfil.TotalLikes);
+                command.Parameters.AddWithValue("@Edad", perfil.Edad);
                 command.Parameters.AddWithValue("@IdGenero", perfil.IdGenero);
                 command.Parameters.AddWithValue("@IdEstado", perfil.IdEstado);
                 command.Parameters.AddWithValue("@IdProfesion", perfil.IdProfesion);
@@ -150,6 +153,7 @@ namespace CampusLove.Infrastructure.Repositories
                     identificacion = @Identificacion, 
                     biografia = @Biografia, 
                     total_likes = @TotalLikes, 
+                    edad = @Edad,
                     id_genero = @IdGenero, 
                     id_estado = @IdEstado, 
                     id_profesion = @IdProfesion, 
@@ -166,6 +170,7 @@ namespace CampusLove.Infrastructure.Repositories
                 command.Parameters.AddWithValue("@Identificacion", perfil.Identificacion);
                 command.Parameters.AddWithValue("@Biografia", perfil.Biografia);
                 command.Parameters.AddWithValue("@TotalLikes", perfil.TotalLikes);
+                command.Parameters.AddWithValue("@Edad", perfil.Edad);
                 command.Parameters.AddWithValue("@IdGenero", perfil.IdGenero);
                 command.Parameters.AddWithValue("@IdEstado", perfil.IdEstado);
                 command.Parameters.AddWithValue("@IdProfesion", perfil.IdProfesion);
@@ -233,6 +238,28 @@ namespace CampusLove.Infrastructure.Repositories
             try
             {
                 using var command = new MySqlCommand(query, _connection, transaction);
+                command.Parameters.AddWithValue("@Id", idPerfil);
+
+                var result = await command.ExecuteNonQueryAsync() > 0;
+                await transaction.CommitAsync();
+                return result;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<bool> ActualizarEdadAsync(int idPerfil, int edad)
+        {
+            const string query = "UPDATE perfil SET edad = @Edad WHERE id_perfil = @Id";
+            using var transaction = await _connection.BeginTransactionAsync();
+
+            try
+            {
+                using var command = new MySqlCommand(query, _connection, transaction);
+                command.Parameters.AddWithValue("@Edad", edad);
                 command.Parameters.AddWithValue("@Id", idPerfil);
 
                 var result = await command.ExecuteNonQueryAsync() > 0;

@@ -39,7 +39,8 @@ namespace CampusLove2.Aplication.UI
                 Console.WriteLine("3. Cambiar intereses");
                 Console.WriteLine("4. Cambiar biografía");
                 Console.WriteLine("5. Cambiar profesión");
-                Console.WriteLine("6. Volver al menú principal");
+                Console.WriteLine("6. Cambiar edad");
+                Console.WriteLine("7. Volver al menú principal");
                 
                 string option = ReadText("\nSeleccione una opción: ");
                 
@@ -63,6 +64,9 @@ namespace CampusLove2.Aplication.UI
                             await CambiarProfesion(currentUser);
                             break;
                         case "6":
+                            await CambiarEdad(currentUser);
+                            break;
+                        case "7":
                             returnToMainMenu = true;
                             break;
                         default:
@@ -395,6 +399,48 @@ namespace CampusLove2.Aplication.UI
             else
             {
                 ShowMessage("Error al actualizar la profesión.", ConsoleColor.Red);
+            }
+            
+            Console.ReadKey();
+        }
+        
+        private async Task CambiarEdad(Usuarios currentUser)
+        {
+            Console.Clear();
+            Console.WriteLine("=== CAMBIAR EDAD ===\n");
+            
+            // Obtener el perfil actual del usuario
+            var perfil = await _perfilRepository.GetByIdAsync(currentUser.IdPerfil);
+            if (perfil == null)
+            {
+                ShowMessage("No se pudo obtener el perfil del usuario.", ConsoleColor.Red);
+                Console.ReadKey();
+                return;
+            }
+            
+            // Mostrar la edad actual
+            Console.WriteLine($"Edad actual: {perfil.Edad}");
+            
+            // Solicitar la nueva edad
+            int nuevaEdad = 0;
+            Console.Write("\nIngrese su nueva edad: ");
+            while (!int.TryParse(Console.ReadLine(), out nuevaEdad) || nuevaEdad < 18 || nuevaEdad > 100)
+            {
+                Console.WriteLine("Edad no válida. Debe ser un número entre 18 y 100.");
+                Console.Write("Ingrese su nueva edad: ");
+            }
+            
+            // Actualizar la edad del perfil
+            perfil.Edad = nuevaEdad;
+            bool result = await _perfilRepository.UpdateAsync(perfil);
+            
+            if (result)
+            {
+                ShowMessage("Edad actualizada exitosamente.", ConsoleColor.Green);
+            }
+            else
+            {
+                ShowMessage("Error al actualizar la edad.", ConsoleColor.Red);
             }
             
             Console.ReadKey();
