@@ -20,7 +20,7 @@ namespace CampusLove.Infrastructure.Repositories
         {
             var usuariosList = new List<Usuarios>();
             const string query = @"
-                SELECT u.*, p.nombre, p.apellido, p.identificacion, p.biografia 
+                SELECT u.*, p.nombre, p.apellido, p.identificacion, p.biografia, p.edad 
                 FROM usuarios u 
                 INNER JOIN perfil p ON u.id_perfil = p.id_perfil";
 
@@ -35,7 +35,15 @@ namespace CampusLove.Infrastructure.Repositories
                     Username = reader["username"].ToString() ?? string.Empty,
                     Password = reader["password"].ToString() ?? string.Empty,
                     FechaNacimiento = Convert.ToDateTime(reader["fecha_nacimiento"]),
-                    IdPerfil = Convert.ToInt32(reader["id_perfil"])
+                    IdPerfil = Convert.ToInt32(reader["id_perfil"]),
+                    Perfil = new Perfil
+                    {
+                        Nombre = reader["nombre"].ToString() ?? string.Empty,
+                        Apellido = reader["apellido"].ToString() ?? string.Empty,
+                        Identificacion = reader["identificacion"].ToString() ?? string.Empty,
+                        Biografia = reader["biografia"].ToString() ?? string.Empty,
+                        Edad = reader["edad"] == DBNull.Value ? 0 : Convert.ToInt32(reader["edad"])
+                    }
                 });
             }
 
@@ -45,7 +53,7 @@ namespace CampusLove.Infrastructure.Repositories
         public async Task<Usuarios?> GetByIdAsync(int id)
         {
             const string query = @"
-                SELECT u.*, p.nombre, p.apellido, p.identificacion, p.biografia 
+                SELECT u.*, p.nombre, p.apellido, p.identificacion, p.biografia, p.edad 
                 FROM usuarios u 
                 INNER JOIN perfil p ON u.id_perfil = p.id_perfil 
                 WHERE u.id_usuarios = @Id";
@@ -164,11 +172,11 @@ namespace CampusLove.Infrastructure.Repositories
         }
 
         public int RegistrarPerfil(string nombre, string apellido, string identificacion, string biografia, 
-            int idGenero, int idEstado, int idProfesion, int idCiudad)
+            int idGenero, int idEstado, int idProfesion, int idCiudad, int edad)
         {
             string insertPerfilQuery = @"
-                INSERT INTO perfil (nombre, apellido, identificacion, biografia, total_likes, id_genero, id_estado, id_profesion, id_ciudad) 
-                VALUES (@nombre, @apellido, @identificacion, @biografia, 0, @idGenero, @idEstado, @idProfesion, @idCiudad)";
+                INSERT INTO perfil (nombre, apellido, identificacion, biografia, total_likes, edad, id_genero, id_estado, id_profesion, id_ciudad) 
+                VALUES (@nombre, @apellido, @identificacion, @biografia, 0, @edad, @idGenero, @idEstado, @idProfesion, @idCiudad)";
             
             using (var cmd = new MySqlCommand(insertPerfilQuery, _connection))
             {
@@ -176,6 +184,7 @@ namespace CampusLove.Infrastructure.Repositories
                 cmd.Parameters.AddWithValue("@apellido", apellido);
                 cmd.Parameters.AddWithValue("@identificacion", identificacion);
                 cmd.Parameters.AddWithValue("@biografia", biografia);
+                cmd.Parameters.AddWithValue("@edad", edad);
                 cmd.Parameters.AddWithValue("@idGenero", idGenero);
                 cmd.Parameters.AddWithValue("@idEstado", idEstado);
                 cmd.Parameters.AddWithValue("@idProfesion", idProfesion);
@@ -186,7 +195,7 @@ namespace CampusLove.Infrastructure.Repositories
             }
         }
 
-        public void RegistrarUsuario(string nickname, string password, int idPerfil)
+        public void RegistrarUsuario(string nickname, string password, int idPerfil, DateTime fechaNacimiento)
         {
             string insertUsuarioQuery = @"
                 INSERT INTO usuarios (username, password, fecha_nacimiento, id_perfil) 
@@ -196,7 +205,7 @@ namespace CampusLove.Infrastructure.Repositories
             {
                 cmd.Parameters.AddWithValue("@username", nickname);
                 cmd.Parameters.AddWithValue("@password", password);
-                cmd.Parameters.AddWithValue("@fechaNacimiento", DateTime.Now);
+                cmd.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento);
                 cmd.Parameters.AddWithValue("@idPerfil", idPerfil);
                 cmd.ExecuteNonQuery();
             }
@@ -289,6 +298,33 @@ namespace CampusLove.Infrastructure.Repositories
 
             using var command = new MySqlCommand(query, _connection);
             command.Parameters.AddWithValue("@Username", username);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new Usuarios
+                {
+                    IdUsuarios = Convert.ToInt32(reader["id_usuarios"]),
+                    Username = reader["username"].ToString() ?? string.Empty,
+                    Password = reader["password"].ToString() ?? string.Empty,
+                    FechaNacimiento = Convert.ToDateTime(reader["fecha_nacimiento"]),
+                    IdPerfil = Convert.ToInt32(reader["id_perfil"])
+                };
+            }
+
+            return null;
+        }
+
+        public async Task<Usuarios?> GetByPerfilIdAsync(int perfilId)
+        {
+            const string query = @"
+                SELECT u.*, p.nombre, p.apellido, p.identificacion, p.biografia 
+                FROM usuarios u 
+                INNER JOIN perfil p ON u.id_perfil = p.id_perfil 
+                WHERE u.id_perfil = @PerfilId";
+
+            using var command = new MySqlCommand(query, _connection);
+            command.Parameters.AddWithValue("@PerfilId", perfilId);
 
             using var reader = await command.ExecuteReaderAsync();
             if (await reader.ReadAsync())

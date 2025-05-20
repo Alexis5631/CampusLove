@@ -12,5 +12,8 @@ namespace CampusLove2.Domain.Entities
         public string? Password { get; set; }
         public DateTime FechaNacimiento { get; set; }
         public int IdPerfil { get; set; } // Relación con Perfil
+        
+        // Propiedades de navegación
+        public Perfil? Perfil { get; set; }
     }
 }

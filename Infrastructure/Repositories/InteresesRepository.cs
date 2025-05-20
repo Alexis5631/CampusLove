@@ -126,17 +126,18 @@ namespace CampusLove.Infrastructure.Repositories
             }
         }
 
-        public async Task<IEnumerable<Intereses>> GetInteresesByUsuarioAsync(int idUsuario)
+        public async Task<IEnumerable<Intereses>> GetInteresesByUsuarioAsync(int idPerfil)
         {
             var interesesList = new List<Intereses>();
             const string query = @"
                 SELECT i.* 
                 FROM intereses i 
                 INNER JOIN usuarios_intereses ui ON i.id_intereses = ui.id_intereses 
-                WHERE ui.id_usuarios = @IdUsuario";
+                INNER JOIN usuarios u ON ui.id_usuarios = u.id_usuarios 
+                WHERE u.id_perfil = @IdPerfil";
 
             using var command = new MySqlCommand(query, _connection);
-            command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+            command.Parameters.AddWithValue("@IdPerfil", idPerfil);
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -149,6 +150,70 @@ namespace CampusLove.Infrastructure.Repositories
             }
 
             return interesesList;
+        }
+
+        public async Task<bool> DeleteInteresesByUsuarioAsync(int idPerfil)
+        {
+            const string query = @"DELETE ui FROM usuarios_intereses ui
+                                INNER JOIN usuarios u ON ui.id_usuarios = u.id_usuarios
+                                WHERE u.id_perfil = @IdPerfil";
+            using var transaction = await _connection.BeginTransactionAsync();
+
+            try
+            {
+                using var command = new MySqlCommand(query, _connection, transaction);
+                command.Parameters.AddWithValue("@IdPerfil", idPerfil);
+
+                var result = await command.ExecuteNonQueryAsync() >= 0; // Puede que no haya intereses para eliminar
+                await transaction.CommitAsync();
+                return result;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<bool> AddInteresUsuarioAsync(int idPerfil, int idInteres)
+        {
+            // Primero obtenemos el id_usuarios correspondiente al id_perfil
+            const string queryGetUsuario = "SELECT id_usuarios FROM usuarios WHERE id_perfil = @IdPerfil";
+            int idUsuario = 0;
+
+            using (var command = new MySqlCommand(queryGetUsuario, _connection))
+            {
+                command.Parameters.AddWithValue("@IdPerfil", idPerfil);
+                var result = await command.ExecuteScalarAsync();
+                if (result != null && result != DBNull.Value)
+                {
+                    idUsuario = Convert.ToInt32(result);
+                }
+                else
+                {
+                    return false; // No se encontró el usuario con ese perfil
+                }
+            }
+
+            // Ahora insertamos el interés para el usuario
+            const string query = "INSERT INTO usuarios_intereses (id_usuarios, id_intereses) VALUES (@IdUsuario, @IdInteres)";
+            using var transaction = await _connection.BeginTransactionAsync();
+
+            try
+            {
+                using var command = new MySqlCommand(query, _connection, transaction);
+                command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+                command.Parameters.AddWithValue("@IdInteres", idInteres);
+
+                var result = await command.ExecuteNonQueryAsync() > 0;
+                await transaction.CommitAsync();
+                return result;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
     }
 }

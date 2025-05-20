@@ -13,6 +13,7 @@ namespace CampusLove2.Domain.Entities
         public string? Identificacion { get; set; }
         public string? Biografia { get; set; }
         public int TotalLikes { get; set; }
+        public int Edad { get; set; }
         public int IdCiudad { get; set; } // Relación con Ciudad
         public int IdGenero { get; set; } // Relación con Genero
         public int IdEstado { get; set; } // Relación con Estado
